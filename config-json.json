@@ -1,0 +1,92 @@
+{
+  "Documents": [
+    ".pdf",
+    ".docx",
+    ".doc",
+    ".txt",
+    ".rtf",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".odt",
+    ".csv",
+    ".md"
+  ],
+  "Images": [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".svg",
+    ".tiff",
+    ".webp",
+    ".ico",
+    ".raw"
+  ],
+  "Videos": [
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".flv",
+    ".wmv",
+    ".webm",
+    ".m4v",
+    ".3gp"
+  ],
+  "Audio": [
+    ".mp3",
+    ".wav",
+    ".aac",
+    ".ogg",
+    ".flac",
+    ".m4a",
+    ".wma"
+  ],
+  "Archives": [
+    ".zip",
+    ".rar",
+    ".tar",
+    ".gz",
+    ".7z",
+    ".bz2",
+    ".xz",
+    ".iso"
+  ],
+  "Executables": [
+    ".exe",
+    ".msi",
+    ".app",
+    ".bat",
+    ".sh",
+    ".com",
+    ".cmd"
+  ],
+  "Code": [
+    ".py",
+    ".js",
+    ".html",
+    ".css",
+    ".java",
+    ".c",
+    ".cpp",
+    ".php",
+    ".rb",
+    ".go",
+    ".ts",
+    ".swift",
+    ".json",
+    ".xml",
+    ".sql",
+    ".yml",
+    ".yaml"
+  ],
+  "Shortcuts": [
+    ".lnk",
+    ".url",
+    ".desktop"
+  ],
+  "Others": []
+}
