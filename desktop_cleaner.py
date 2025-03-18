@@ -1,31 +1,28 @@
-#!/usr/bin/env python3
-"""
-Desktop Cleanup Tool
-
-Automatically organizes your desktop files into categorized folders
-based on file types, making it easier to maintain a clean workspace.
-"""
-
 import os
 import shutil
 import datetime
 import json
-import argparse
-from typing import Dict, List, Optional, Tuple
-
+from typing import Dict, List
 
 def get_desktop_path() -> str:
-    """Returns the path to the user's desktop."""
+    """
+    Retrieves the path to the user's Desktop directory.
+    Works cross-platform for Windows, macOS, and Linux.
+
+    Returns:
+        str: The absolute path to the Desktop folder.
+    """
     return os.path.join(os.path.expanduser("~"), "Desktop")
 
+def get_file_categories() -> Dict[str, List[str]]:
+    """
+    Defines file categories and their corresponding extensions.
+    This dictionary helps determine where each file should be placed.
 
-def load_config(config_path: Optional[str] = None) -> Dict[str, List[str]]:
+    Returns:
+        Dict[str, List[str]]: A mapping of folder names to file extensions.
     """
-    Loads file categories from config.json if it exists, 
-    otherwise returns default categories.
-    """
-    # Default configuration
-    default_categories = {
+    return {
         "Documents": [".pdf", ".docx", ".doc", ".txt", ".rtf", ".xls", ".xlsx", ".ppt", ".pptx", ".odt"],
         "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".tiff"],
         "Videos": [".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv"],
@@ -33,197 +30,105 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, List[str]]:
         "Archives": [".zip", ".rar", ".tar", ".gz", ".7z"],
         "Executables": [".exe", ".msi"],
         "Code": [".py", ".js", ".html", ".css", ".java", ".c", ".cpp", ".php", ".rb", ".go"],
-        "Shortcuts": [".lnk"],  # These will be skipped
-        "Others": []
+        "Shortcuts": [".lnk"],  # Shortcuts remain on the desktop (not moved)
+        "Others": []  # Files with unknown extensions will go here
     }
-    
-    # If a config path is provided, use it
-    if config_path and os.path.exists(config_path):
-        try:
-            with open(config_path, 'r') as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            print(f"⚠️ Error parsing config file: {config_path}")
-            print("Using default categories instead.")
-            return default_categories
-    
-    # Look for config.json in the same directory as the script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_file = os.path.join(script_dir, "config.json")
-    
-    if os.path.exists(config_file):
-        try:
-            with open(config_file, 'r') as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            print("⚠️ Error parsing config.json")
-            print("Using default categories instead.")
-    
-    return default_categories
-
 
 def ensure_folders_exist(base_path: str, categories: Dict[str, List[str]]):
-    """Creates necessary folders if they do not exist."""
+    """
+    Ensures that all necessary category folders exist in the target directory.
+    If a category folder does not exist, it is created.
+
+    Args:
+        base_path (str): The path where category folders should be created.
+        categories (Dict[str, List[str]]): The dictionary of file categories.
+    """
     for category in categories.keys():
         category_path = os.path.join(base_path, category)
         if not os.path.exists(category_path):
-            os.makedirs(category_path)
-            print(f"📁 Created folder: {category}")
-
+            os.makedirs(category_path)  # Create the folder if it does not exist
 
 def categorize_file(file_name: str, categories: Dict[str, List[str]]) -> str:
-    """Determines the category for a given file based on its extension."""
-    file_ext = os.path.splitext(file_name)[1].lower()
+    """
+    Determines the appropriate category for a given file based on its extension.
+
+    Args:
+        file_name (str): The name of the file to be categorized.
+        categories (Dict[str, List[str]]): The dictionary mapping categories to extensions.
+
+    Returns:
+        str: The category name the file belongs to.
+    """
+    file_ext = os.path.splitext(file_name)[1].lower()  # Extract and normalize file extension
     for category, extensions in categories.items():
         if file_ext in extensions:
-            return category
-    return "Others"
+            return category  # Return the matching category
+    return "Others"  # Default to "Others" if no match is found
 
-
-def move_file(file_path: str, destination_folder: str, dry_run: bool = False) -> bool:
+def move_file(file_path: str, destination_folder: str) -> bool:
     """
-    Moves a file to the destination folder, handling errors safely.
-    In dry-run mode, it only simulates the operation.
+    Moves a file to the specified destination folder, handling errors gracefully.
+
+    Args:
+        file_path (str): The full path to the file being moved.
+        destination_folder (str): The folder where the file should be placed.
+
+    Returns:
+        bool: True if the file was moved successfully, False if an error occurred.
     """
     try:
-        dest_file_path = os.path.join(destination_folder, os.path.basename(file_path))
-        
-        # Check if file already exists in destination
-        if os.path.exists(dest_file_path):
-            base, ext = os.path.splitext(os.path.basename(file_path))
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            new_file_name = f"{base}_{timestamp}{ext}"
-            dest_file_path = os.path.join(destination_folder, new_file_name)
-        
-        if dry_run:
-            print(f"🔍 Would move {file_path} to {dest_file_path}")
-            return True
-        else:
-            shutil.move(file_path, dest_file_path)
-            print(f"✅ Moved {os.path.basename(file_path)} to {os.path.basename(destination_folder)}")
-            return True
+        shutil.move(file_path, destination_folder)  # Move file to the categorized folder
+        return True  # Success
     except Exception as e:
-        print(f"❌ Error moving {file_path}: {e}")
-        return False
+        print(f"❌ Error moving {file_path}: {e}")  # Log error
+        return False  # Failure
 
-
-def cleanup_desktop(base_path: str, skip_categories: List[str] = None, dry_run: bool = False):
+def cleanup_desktop(base_path: str):
     """
-    Scans, categorizes, moves files, and logs the process.
-    
+    Scans the target directory, categorizes files, moves them to their corresponding folders,
+    and logs the process to a JSON file.
+
     Args:
-        base_path: Path to clean up (usually desktop)
-        skip_categories: List of categories to skip
-        dry_run: If True, only simulate operations without moving files
+        base_path (str): The directory to organize (e.g., Desktop).
     """
-    if skip_categories is None:
-        skip_categories = []
-    
-    # Always skip "Shortcuts" category
-    if "Shortcuts" not in skip_categories:
-        skip_categories.append("Shortcuts")
-    
-    print(f"🚀 Starting desktop cleanup on: {base_path}")
-    if dry_run:
-        print("🔍 DRY RUN MODE: No files will be moved")
-    
-    categories = load_config()
-    ensure_folders_exist(base_path, categories)
-    
-    log_entries = []
-    total_files = 0
-    moved_files = 0
-    
+    categories = get_file_categories()  # Retrieve file category definitions
+    ensure_folders_exist(base_path, categories)  # Ensure category folders exist
+
+    log_entries = []  # List to store details of moved files
+
     for file_name in os.listdir(base_path):
         file_path = os.path.join(base_path, file_name)
-        
-        # Skip directories and the log file itself
-        if os.path.isdir(file_path) or file_name == "desktop_cleanup_log.json":
+
+        # Skip directories (we only want to move files)
+        if os.path.isdir(file_path):
             continue
-        
-        total_files += 1
-        
-        # Categorize the file
+
+        # Determine the appropriate category for the file
         category = categorize_file(file_name, categories)
-        
-        # Skip files in specified categories
-        if category in skip_categories:
-            log_entries.append({
-                "file": file_name, 
-                "category": category, 
-                "success": None,
-                "skipped": True,
-                "reason": "Category skipped"
-            })
+
+        # Skip shortcut files (e.g., .lnk files) as they should remain on the desktop
+        if category == "Shortcuts":
             continue
-        
-        # Move the file
+
+        # Define the target destination for the file
         destination_folder = os.path.join(base_path, category)
-        success = move_file(file_path, destination_folder, dry_run)
-        
-        if success:
-            moved_files += 1
-        
-        # Log the result
-        log_entries.append({
-            "file": file_name, 
-            "category": category, 
-            "success": success,
-            "skipped": False,
-            "timestamp": str(datetime.datetime.now())
-        })
-    
-    # Write structured log file
+
+        # Attempt to move the file and record the success/failure
+        success = move_file(file_path, destination_folder)
+
+        # Log the operation for record-keeping
+        log_entries.append({"file": file_name, "category": category, "success": success})
+
+    # Save log entries to a JSON file for detailed tracking
     log_file_path = os.path.join(base_path, "desktop_cleanup_log.json")
-    log_data = {
-        "timestamp": str(datetime.datetime.now()),
-        "base_path": base_path,
-        "dry_run": dry_run,
-        "files_processed": total_files,
-        "files_moved": moved_files,
-        "files": log_entries
-    }
-    
-    if not dry_run:
-        with open(log_file_path, "w") as log_file:
-            json.dump(log_data, log_file, indent=4)
-        print(f"📄 Log file saved at: {log_file_path}")
-    
-    print(f"✨ Desktop Cleanup Complete!")
-    print(f"📊 Summary: {moved_files}/{total_files} files were processed.")
+    with open(log_file_path, "w") as log_file:
+        json.dump({"timestamp": str(datetime.datetime.now()), "files": log_entries}, log_file, indent=4)
 
+    # Print summary to the console
+    print("✅ Desktop Cleanup Complete!")
+    print(f"📄 Log file saved at: {log_file_path}")
+    print(f"🔄 {len(log_entries)} files were processed.")
 
-def parse_arguments() -> Tuple[str, List[str], bool, Optional[str]]:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Desktop Cleanup Tool")
-    parser.add_argument("--path", 
-                        help="Path to clean up (defaults to Desktop)")
-    parser.add_argument("--skip-categories",
-                        help="Comma-separated list of categories to skip")
-    parser.add_argument("--dry-run", 
-                        action="store_true",
-                        help="Simulate cleanup without moving files")
-    parser.add_argument("--config",
-                        help="Path to custom configuration file")
-    
-    args = parser.parse_args()
-    
-    # Set the base path
-    base_path = args.path if args.path else get_desktop_path()
-    
-    # Parse categories to skip
-    skip_categories = []
-    if args.skip_categories:
-        skip_categories = [cat.strip() for cat in args.skip_categories.split(",")]
-    
-    return base_path, skip_categories, args.dry_run, args.config
-
-
-def main():
-    """Main entry point for the script."""
-    base_path, skip_categories, dry_run, config_path = parse_arguments()
-    cleanup_desktop(base_path, skip_categories, dry_run)
-
-
+# Ensure script runs only when executed directly
 if __name__ == "__main__":
-    main()
+    cleanup_desktop(get_desktop_path())
