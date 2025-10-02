@@ -255,4 +255,4 @@ Absolutely. Combine `desktopcleaner run --dry-run` with CI jobs to enforce namin
 
 ---
 
-*Repository: https://github.com/yourusername/DesktopCleaner*
+*Repository: https://github.com/danielpmadden/DesktopCleaner*
