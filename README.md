@@ -252,7 +252,3 @@ Run `desktopcleaner run --dry-run` to print planned moves without touching the f
 
 **Can I integrate this into CI?**  
 Absolutely. Combine `desktopcleaner run --dry-run` with CI jobs to enforce naming conventions in shared workspaces.
-
----
-
-*Repository: https://github.com/danielpmadden/DesktopCleaner*
