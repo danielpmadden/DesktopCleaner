@@ -4,12 +4,6 @@
 
 **DesktopCleaner** is a cross-platform Python utility that keeps your desktop tidy by sorting files into smart, traceable folders in seconds.
 
-![Animated demo showing DesktopCleaner in action](docs/clean-demo.gif)
-
-| Before | After |
-| ------ | ----- |
-| ![Cluttered desktop screenshot](docs/screenshots/before.png) | ![Organized desktop screenshot](docs/screenshots/after.png) |
-
 ---
 
 ## Why DesktopCleaner?
