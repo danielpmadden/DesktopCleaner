@@ -2,17 +2,14 @@
 
 A Python utility that automatically organizes your desktop files into categorized folders based on file types.
 
-![Python Version](https://img.shields.io/badge/python-3.6+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-
 ## Features
 
-- 🗂️ Automatically categorizes desktop files by type
-- 📁 Creates organized folder structure
-- 📝 Generates detailed JSON logs of all operations
-- ⏭️ Skips shortcuts and system folders
-- 🛡️ Error handling for safe file operations
-- ⚙️ Customizable file categories and extensions
+- Automatically categorizes desktop files by type
+- Creates organized folder structure
+- Generates detailed JSON logs of all operations
+- Skips shortcuts and system folders
+- Error handling for safe file operations
+- Customizable file categories and extensions
 
 ## Installation
 
