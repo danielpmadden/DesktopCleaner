@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "desktop-cleaner"
+version = "0.1.0"
+description = "Organise desktop files into category folders with optional dry-run support."
+readme = "README.md"
+authors = [{ name = "DesktopCleaner Maintainers" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+desktop-cleaner = "desktop_cleaner:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.4", "black>=23.0"]
