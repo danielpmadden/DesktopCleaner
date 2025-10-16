@@ -1,258 +1,99 @@
 # DesktopCleaner
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/release/python-390/) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](#cross-platform-support) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Tests](https://img.shields.io/badge/tests-pytest-green.svg)](#testing)
+DesktopCleaner is a lightweight Python utility that organises the files in a folder (typically your Desktop) into category
+sub-directories. It now provides a small but reliable CLI, dry-run safety checks, timestamped JSON logs, and optional rule files
+so that documentation and behaviour stay aligned.
 
-**DesktopCleaner** is a cross-platform Python utility that keeps your desktop tidy by sorting files into smart, traceable folders in seconds.
-
----
-
-## Why DesktopCleaner?
-- **Taming the chaos:** Desktops become dumping grounds for downloads, screenshots, and temporary files—DesktopCleaner groups them into meaningful folders automatically.
-- **Consistent structure:** Rely on extension-to-folder rules so that presentations land in *Documents*, screenshots in *Images*, and installers in *Executables*.
-- **Time saver:** Run it manually or schedule it to keep your workspace fresh without any manual dragging.
-
-### Safety first
-- **Dry-run mode** simulates every move and prints the planned operations, letting you verify results before a single file is touched.
-- **Undo/restore** stores a manifest of moves so you can roll back the last cleanup with a single command.
-- **Detailed logs** provide a full audit trail including timestamps, original locations, and destinations.
-
-## Cross-platform support
-- **Windows:** Uses `%USERPROFILE%\Desktop` and respects NTFS permissions. UNC paths are supported when mapped drives are available.
-- **macOS:** Targets `~/Desktop`, handles `.DS_Store` gracefully, and supports Spotlight metadata preservation.
-- **Mixed environments:** Pass `--path` to point at shared desktops (e.g., OneDrive, iCloud) regardless of the host OS.
-
----
+## Features
+- **Cross-platform path detection** – defaults to the current user's Desktop directory on Windows, macOS, and Linux.
+- **Configurable rules** – load extension-to-folder mappings from JSON files such as [`config-json.json`](config-json.json).
+- **Dry-run support** – preview which files would be moved without touching the filesystem.
+- **Timestamped logs** – every run writes a JSON report describing the actions performed (or planned in dry-run mode).
 
 ## Installation
-DesktopCleaner targets **Python 3.9+** and has no external dependencies.
+DesktopCleaner targets Python 3.9 or newer and has no third-party dependencies.
 
-### Install with `pipx` (recommended)
-```bash
-pipx install desktopcleaner
-```
-
-### Install with `pip`
-```bash
-python -m pip install --user desktopcleaner
-```
-
-> **Tip:** Prefer an isolated environment? Create and activate a virtualenv before installing:
-> ```bash
-> python -m venv .venv
-> source .venv/bin/activate   # macOS
-> .venv\\Scripts\\activate     # Windows
-> python -m pip install desktopcleaner
-> ```
-
----
-
-## Quickstart
-Run DesktopCleaner against your current desktop (auto-detected for Windows and macOS):
+Clone the repository and install it in editable mode:
 
 ```bash
-desktopcleaner run
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install --upgrade pip
+pip install -e .
 ```
 
-Common flags:
+The editable install exposes the `desktop-cleaner` console script. Alternatively you can run the module directly without
+installation (`python -m desktop_cleaner`).
+
+## Usage
+Organise your Desktop with the default rules:
 
 ```bash
-# Preview the actions without touching files
-desktopcleaner run --dry-run
-
-# Use a custom rules file (YAML or JSON)
-desktopcleaner run --rules ~/.config/desktopcleaner/rules.yaml
-
-# Undo the last cleanup using the generated manifest
-desktopcleaner --undo
-
-# Increase verbosity when debugging
-desktopcleaner run --log-level DEBUG
+desktop-cleaner
 ```
 
----
+Preview the actions first:
 
-## Rules & Configuration
-DesktopCleaner ships with a sensible default mapping. Files are matched by extension (case-insensitive) and moved into the corresponding folder beneath your desktop.
-
-| Folder       | Extensions |
-| ------------ | ---------- |
-| Documents    | `.pdf`, `.docx`, `.doc`, `.txt`, `.rtf`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.odt` |
-| Images       | `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.svg`, `.tiff` |
-| Videos       | `.mp4`, `.mov`, `.avi`, `.mkv`, `.flv`, `.wmv` |
-| Audio        | `.mp3`, `.wav`, `.aac`, `.ogg`, `.flac` |
-| Archives     | `.zip`, `.rar`, `.tar`, `.gz`, `.7z` |
-| Code         | `.py`, `.js`, `.html`, `.css`, `.java`, `.c`, `.cpp`, `.php`, `.rb`, `.go` |
-| Executables  | `.exe`, `.msi`, `.pkg`, `.dmg` |
-| Shortcuts    | `.lnk`, `.alias` *(left untouched)* |
-| Others       | Catch-all for unknown extensions |
-
-### Custom rule files
-Store your rules in **YAML** or **JSON**. DesktopCleaner resolves relative paths against the invoking directory.
-
-#### YAML example
-```yaml
-# ~/.config/desktopcleaner/rules.yaml
-Documents:
-  - .pdf
-  - .md
-Screenshots:
-  - .png
-  - .jpg
-Installers:
-  - .dmg
-  - .pkg
+```bash
+desktop-cleaner --dry-run
 ```
 
-#### JSON example
+Point to another folder or use a custom configuration file:
+
+```bash
+desktop-cleaner --path ~/Downloads --config ~/rules.json
+```
+
+By default logs are written to the target directory using the pattern `desktop_cleanup_log_<timestamp>.json`. Provide
+`--log` to specify an explicit path.
+
+## Configuration
+Rules are expressed as a JSON object that maps category names to lists of file extensions. Extensions are matched
+case-insensitively, with or without the leading dot. A minimal example:
+
 ```json
 {
-  "Documents": [".pdf", ".md"],
-  "Screenshots": [".png", ".jpg"],
-  "Installers": [".dmg", ".pkg"],
-  "Ignore": [".lnk", ".alias"]
+  "Documents": [".pdf", "docx"],
+  "Images": [".png", ".jpg"],
+  "Shortcuts": [".lnk"],
+  "Others": []
 }
 ```
 
-> Use `desktopcleaner validate --rules path/to/rules.yaml` to lint custom mappings before running them.
+Any category named `Shortcuts` is skipped instead of being moved, which keeps launchers on the Desktop while still logging them.
+Unknown extensions fall back to the `Others` folder.
 
----
+The repository includes [`config-json.json`](config-json.json) as a ready-to-use rule set.
 
-## Scheduling
-Automate tidy desktops on both platforms.
+## Logging
+Every run produces a structured JSON log containing the timestamp, target path, dry-run state, and an entry per file. Example:
 
-### Windows (Task Scheduler)
-1. Open **Task Scheduler** → *Create Basic Task...*
-2. Name it "DesktopCleaner" and choose the trigger (e.g., daily at 9am).
-3. Action: **Start a program**.
-   - Program/script: `python`
-   - Add arguments: `-m desktopcleaner run`
-   - Start in: `%USERPROFILE%`
-4. Finish and test via **Run**.
-
-### macOS (`launchd`)
-Create `~/Library/LaunchAgents/com.example.desktopcleaner.plist`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-  <dict>
-    <key>Label</key>
-    <string>com.example.desktopcleaner</string>
-    <key>ProgramArguments</key>
-    <array>
-      <string>/usr/bin/python3</string>
-      <string>-m</string>
-      <string>desktopcleaner</string>
-      <string>run</string>
-    </array>
-    <key>StartInterval</key>
-    <integer>3600</integer> <!-- every hour -->
-    <key>RunAtLoad</key>
-    <true/>
-    <key>StandardOutPath</key>
-    <string>/tmp/desktopcleaner.log</string>
-    <key>StandardErrorPath</key>
-    <string>/tmp/desktopcleaner.err</string>
-  </dict>
-</plist>
+```json
+{
+  "timestamp": "2024-05-20T12:00:00",
+  "base_path": "/Users/alex/Desktop",
+  "dry_run": false,
+  "entries": [
+    {"file": "report.pdf", "category": "Documents", "moved": true, "skipped": false, "error": null},
+    {"file": "launch.desktop", "category": "Shortcuts", "moved": false, "skipped": true, "error": null}
+  ]
+}
 ```
-
-Load it:
-```bash
-launchctl load ~/Library/LaunchAgents/com.example.desktopcleaner.plist
-```
-
----
-
-## Logging & Undo
-- **Log location:** `~/Desktop/.desktopcleaner/logs/<timestamp>.log` (Windows paths use backslashes).
-- **Format:** Each line is structured as `TIMESTAMP | LEVEL | ACTION | SOURCE -> DESTINATION`.
-- **Undo manifest:** After each successful run, DesktopCleaner writes `~/Desktop/.desktopcleaner/history/<timestamp>.json` capturing moved files. `desktopcleaner --undo` replays the manifest to restore everything to its original place.
-- **Partial restores:** Supply `--undo --file foo.pdf` to roll back a single file entry.
-
-Sample log excerpt:
-```text
-2024-05-20T09:12:14 INFO MOVE "~/Desktop/screenshot-1.png" -> "~/Desktop/Images/screenshot-1.png"
-2024-05-20T09:12:14 INFO SKIP "~/Desktop/Shortcut.lnk" (rule: Shortcuts)
-2024-05-20T09:12:15 INFO MOVE "~/Desktop/report.xlsx" -> "~/Desktop/Documents/report.xlsx"
-```
-
----
 
 ## Testing
-DesktopCleaner ships with `pytest` suites and fixture-based desktop snapshots.
+The project uses the built-in `unittest` framework:
 
 ```bash
-pytest
+python -m unittest
 ```
 
-- Tests simulate Windows & macOS directory structures inside temporary folders.
-- Fixtures include sample desktops (`tests/fixtures/desktop_win/`, `tests/fixtures/desktop_mac/`) to verify mappings, dry-runs, and undo manifests.
-
----
-
-## Known Limitations
-- Network-mounted desktops are treated as local paths; ensure connectivity before running.
-- Encrypted or locked files cannot be moved and will be reported as warnings.
-- Undo only tracks the **most recent** successful run. Keep backups for long-term archival.
-- Scheduling examples assume Python is available on `PATH`.
-
-> **Disclaimer:** Always review dry-run output before live runs. DesktopCleaner moves files but never deletes them; still, use version control/backups for critical assets.
-
----
-
-## Roadmap
-- [ ] Interactive TUI for reviewing actions.
-- [ ] Rule editor GUI with drag-and-drop.
-- [ ] Cloud sync support for shared workspaces.
-
-### Changelog
-- **0.3.0** – Added undo manifests and log viewer command.
-- **0.2.0** – Introduced custom rules loader and validation.
-- **0.1.0** – Initial release with core desktop organization.
-
----
+Tests create temporary directories so they are safe to run locally and in CI environments.
 
 ## Contributing
 1. Fork the repository.
-2. Create a feature branch: `git checkout -b feat/amazing-improvement`.
-3. Install dev dependencies: `pip install -e .[dev]`.
-4. Run tests: `pytest`.
-5. Submit a pull request with context and screenshots when applicable.
-6. Be respectful and document behavior changes clearly so reviewers can follow along.
-
-### Development environment
-```bash
-git clone https://github.com/yourusername/DesktopCleaner.git
-cd DesktopCleaner
-python -m pip install --upgrade pip
-pip install -e .[dev]
-```
-
----
+2. Create a feature branch: `git checkout -b feature/amazing-improvement`.
+3. Install the project with `pip install -e .` and run `python -m unittest` before submitting.
+4. Open a pull request with a description of the change and any relevant screenshots or logs.
 
 ## License
 DesktopCleaner is released under the [MIT License](LICENSE).
-
----
-
-## FAQ
-**Does it work on Linux?**  
-DesktopCleaner officially targets Windows and macOS desktops. Linux support is experimental—ensure your desktop path is configured via `--path`.
-
-**Can I ignore files without moving them?**  
-Yes, add them to the `Ignore` section in your rules or use `--exclude "*.iso"` on the command line.
-
-**How do I preview what will change?**  
-Run `desktopcleaner run --dry-run` to print planned moves without touching the filesystem.
-
-**Where are logs stored on Windows?**  
-`%USERPROFILE%\Desktop\.desktopcleaner\logs`. Undo manifests live alongside in `history/`.
-
-**Can I integrate this into CI?**  
-Absolutely. Combine `desktopcleaner run --dry-run` with CI jobs to enforce naming conventions in shared workspaces.
-
----
-
-*Repository: https://github.com/danielpmadden/DesktopCleaner*
