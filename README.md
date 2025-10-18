@@ -1,4 +1,4 @@
-# DesktopCleaner 🛰️
+# DesktopCleaner
 
 *A calm desktop organiser for curious tinkerers.*
 
