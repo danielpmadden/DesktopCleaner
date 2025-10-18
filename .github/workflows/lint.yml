@@ -1,28 +1,33 @@
-name: Lint and Scan
+name: Quality Checks
 
 on:
   push:
   pull_request:
 
 jobs:
-  quality:
+  lint-test-audit:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - name: Install tools
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .
-          pip install black flake8 bandit pip-audit
-      - name: Black
+          python -m pip install -e .[dev]
+      - name: Ruff lint
+        run: ruff check .
+      - name: Black formatting check
         run: black --check .
-      - name: Flake8
-        run: flake8 desktop_cleaner.py
-      - name: Bandit
-        run: bandit -r desktop_cleaner.py
-      - name: pip-audit
-        run: pip-audit || true
+      - name: Run tests
+        run: pytest --maxfail=1 --disable-warnings -q
+      - name: Bandit security review
+        run: bandit -r src/desktop_cleaner
+      - name: pip-audit vulnerability scan
+        run: pip-audit --progress-spinner off
+        continue-on-error: true

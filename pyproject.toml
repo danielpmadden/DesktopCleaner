@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=65"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,13 +7,50 @@ name = "desktop-cleaner"
 version = "0.1.0"
 description = "Organise desktop files into category folders with optional dry-run support."
 readme = "README.md"
-authors = [{ name = "DesktopCleaner Maintainers" }]
-license = { file = "LICENSE" }
+authors = [{ name = "Daniel Madden" }]
+license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = []
+keywords = ["automation", "desktop", "productivity", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Desktop Environment",
+    "Topic :: Utilities",
+]
 
 [project.scripts]
 desktop-cleaner = "desktop_cleaner:main"
 
+[project.urls]
+Homepage = "https://github.com/danielmadden/DesktopCleaner"
+Repository = "https://github.com/danielmadden/DesktopCleaner"
+Documentation = "https://github.com/danielmadden/DesktopCleaner/tree/main/docs"
+
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "ruff>=0.4", "black>=23.0"]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+    "black>=23.0",
+    "bandit>=1.7",
+    "pip-audit>=2.6",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["desktop_cleaner"]
+include-package-data = true
+license-files = ["LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
