@@ -1,0 +1,6 @@
+PLACEHOLDER for preview.png
+To capture a fresh screenshot of DesktopCleaner in action:
+1. Prepare a folder with a mix of files in categories used by the tool.
+2. Run `python desktop_cleaner.py --dry-run` to display the planned moves.
+3. Use your operating system's screenshot tool to capture the terminal output.
+4. Save the image as docs/screenshots/preview.png (do not commit the binary).
