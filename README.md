@@ -1,67 +1,82 @@
-# DesktopCleaner 🛰️
+# DesktopCleaner
 
-*A calm desktop organiser for curious tinkerers.*
+DesktopCleaner organises files within a target directory (typically a user desktop) into sensible category folders while recording a timestamped JSON activity log. The project is intentionally lightweight, depends only on the Python standard library, and is suitable for demonstrations of safe filesystem automation workflows.
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue) ![License](https://img.shields.io/badge/License-MIT-green) ![Status](https://img.shields.io/badge/Status-Lab%20Prototype-yellow) ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey) ![CI](https://img.shields.io/badge/CI-Manual-lightgrey)
+## Key Features
+- Categorises documents, media, archives, executables, code assets, and miscellaneous files based on configurable extension lists.
+- Preserves desktop shortcuts in place to avoid breaking workflow entry points.
+- Supports a dry-run mode so prospective changes can be reviewed without moving files.
+- Emits a detailed JSON log for every run, including skipped files and errors.
+- Provides a command-line interface exposed through `python -m desktop_cleaner` or the `desktop-cleaner` console script.
 
-> 📸 Screenshot placeholder lives at [`docs/screenshots/preview.png.placeholder.txt`](docs/screenshots/preview.png.placeholder.txt). Capture a terminal session locally and keep binaries out of the repo.
+## Installation
+DesktopCleaner targets Python 3.9 through 3.13. Create an isolated environment and install the package together with its development tooling when needed:
 
-## Overview
-DesktopCleaner is a single-file Python script that sweeps through your Desktop folder and drops files into simple category directories. It is intentionally lightweight, easy to read, and perfect for experimenting with filesystem automation.
-
-## Features
-- Moves files into default buckets such as `Documents`, `Images`, `Archives`, and `Others`.
-- Skips files that already live inside category folders to avoid endless nesting.
-- Writes a timestamped JSON report describing every move performed during the run.
-- Runs on Windows, macOS, and Linux using only the Python standard library.
-
-## Getting Started
-
-### Prerequisites
-- Python 3.9 or newer.
-- Access to a Desktop directory with files you are comfortable moving.
-
-### Setup
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
-pip install --upgrade pip
-pip install -e .
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -e .[dev]
 ```
 
-The editable install exposes a `desktop-cleaner` console script. Alternatively, run the module directly:
+For runtime-only usage you may omit the `[dev]` extras suffix.
 
-```bash
-python -m desktop_cleaner
-```
-
-### Usage
-Run the script to tidy the Desktop detected for the current user:
+## Quick Start
+Run the utility using the console script or Python module entry point. Both commands organise the current user's desktop by default:
 
 ```bash
 desktop-cleaner
+# or
+python -m desktop_cleaner
 ```
 
-Logs are timestamped (for example `desktop_cleanup_log_20240527_101500.json`) and saved inside the target directory by default.
+A JSON report named `desktop_cleanup_log_<timestamp>.json` is written alongside the files that were processed unless a custom log path is provided.
 
-Pass `--dry-run` to preview actions without moving files, `--path` to target another folder, `--config` to load a JSON mapping, and `--log` to choose where the report is written.
+## Usage Examples
+Tidy a specific folder without moving any files and send the report to a dedicated location:
 
-## Documentation
-- [`docs/HELP.md`](docs/HELP.md) — setup, usage, and troubleshooting notes.
-- [`docs/CHANGELOG.md`](docs/CHANGELOG.md) — repository maintenance history.
-- [`docs/SECURITY.md`](docs/SECURITY.md) — safe-use guidelines and disclosure policy.
-- [`ROADMAP.md`](ROADMAP.md) — future improvements and known gaps.
-- [`docs/archive/2023-project-audit-report.md`](docs/archive/2023-project-audit-report.md) — historical audit for reference.
+```bash
+desktop-cleaner --path /path/to/folder --dry-run --log /tmp/desktop-cleaner-report.json
+```
 
-## Development Notes
-- No automated tests currently pass; see the roadmap for alignment work.
-- A lightweight GitHub Actions workflow (`.github/workflows/lint.yml`) is included to encourage linting and security scanning once dependencies are installed locally.
-- The example rules file [`config-json.json`](config-json.json) illustrates how extension mappings might look in a future configurable release.
+Load a JSON configuration that overrides the default extension groups:
 
-## Contributing
-Suggestions and observations are welcome! File an issue or open a pull request describing your idea.
+```bash
+desktop-cleaner --config config-json.json
+```
 
-## Author
-**Daniel Madden**  
-IT Professional | Technology Enthusiast | Builder of Experiments  
-“Not a software engineer — just a guy who loves all things tech.”
+The configuration file must contain a mapping of category names to lists of file extensions. Unknown extensions fall back to the `Others` category automatically.
+
+## Troubleshooting and Support
+- Ensure the configured target directory exists and is writable. Permission errors are logged per file in the run report.
+- When testing on network shares, enable the `--dry-run` option first to confirm connectivity and permissions.
+- On Windows systems using PowerShell, activate the virtual environment with `.venv\Scripts\Activate.ps1`.
+- If the console script is unavailable after installation, verify that the virtual environment's `bin/` (or `Scripts/`) directory is in your `PATH`.
+
+Questions and contributions can be raised through the issue tracker or pull requests. Please include environment details and a copy of the generated log when reporting bugs.
+
+## Project Layout and Dependency Overview
+```
+DesktopCleaner
+ ├── src/desktop_cleaner/   → core logic and CLI entry points
+ ├── tests/                 → unit tests covering configuration, CLI, and file operations
+ ├── docs/                  → historical documentation, security notes, and archived audits
+ ├── config-json.json       → sample configuration illustrating custom categories
+ ├── README.md              → project overview and setup guide
+ ├── ROADMAP.md             → forward-looking maintenance plan and audit summary
+ └── CHANGELOG.md           → release highlights and repository updates
+```
+
+## Testing
+Run the automated test suite from an activated virtual environment:
+
+```bash
+pytest
+```
+
+Static analysis recommendations include `ruff`, `black`, `bandit`, and `pip-audit`, all of which are installed via the development extras group.
+
+## License and Credits
+DesktopCleaner is distributed under the MIT License. See `LICENSE` for full terms.
+
+Author: Daniel Madden

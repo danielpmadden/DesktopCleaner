@@ -1,0 +1,2 @@
+# DesktopCleaner relies solely on the Python standard library at runtime.
+# This file remains for packaging clarity and future dependency tracking.
