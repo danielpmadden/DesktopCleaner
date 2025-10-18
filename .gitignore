@@ -1,8 +1,24 @@
+# Python artifacts
 __pycache__/
 *.py[cod]
-*.log
-desktop_cleanup_log_*.json
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
 .venv/
-build/
-dist/
-*.egg-info/
+.env/
+
+# Logs and reports
+*.log
+desktop_cleanup_log.json
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Screenshots
+*.png
+*.jpg
+*.jpeg
+*.gif

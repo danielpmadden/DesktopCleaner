@@ -1,0 +1,28 @@
+name: Lint and Scan
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install black flake8 bandit pip-audit
+      - name: Black
+        run: black --check .
+      - name: Flake8
+        run: flake8 desktop_cleaner.py
+      - name: Bandit
+        run: bandit -r desktop_cleaner.py
+      - name: pip-audit
+        run: pip-audit || true

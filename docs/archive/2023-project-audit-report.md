@@ -1,5 +1,7 @@
 # Project Audit & Roadmap Report
 
+> Archived reference: superseded on 2024-05-27 to preserve historical context.
+
 ## 1. Executive Summary
 DesktopCleaner is presented as a cross-platform desktop tidying utility written in Python, but the current repository only contains a small monolithic script with rudimentary file moving logic and a misaligned test suite. Overall maturity is low: there is no packaging metadata, configuration loader, or automated quality gates, and the README dramatically overstates existing capabilities. Overall readiness score: **25 / 100**. Top strengths: (1) simple, readable core logic for scanning and moving files, (2) straightforward JSON logging that enables basic traceability, and (3) permissive MIT licensing with marketing-ready documentation. Top weaknesses: (1) documentation claims and tests reference non-existent features (undo, dry-run, CLI, config loader), (2) no dependency or packaging management which blocks installation and reproducible builds, and (3) absent security, QA, and CI/CD safeguards, leaving behavior unverified and fragile.
 
